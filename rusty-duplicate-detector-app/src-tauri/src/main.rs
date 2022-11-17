@@ -7,25 +7,24 @@ use std::sync::mpsc::channel;
 )]
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn walk(path: &str) -> Vec<String> {
+fn walk(path: &str) -> Result<Vec<String>, String> {
     println!("Walking {}", path);
     let resource_dir = PathBuf::from(path);
-    let (tx, rx) = channel();
+    let mut results = Vec::new();
     let walker_rx = mediawalker::start_walking(&resource_dir);
     for received in walker_rx {
-        let tx = tx.clone();
         match received.result {
             Ok(result) => {
                 if result == true {
                     println!("Received path {}", received.path);
-                    tx.send(received.path).unwrap();
+                    results.push(received.path)
                 }
             }
-            Err(err) => println!("{}", err),
+            Err(err) => eprintln!("Error"),
         }
     }
     println!("All received");
-    return rx.into_iter().collect();
+    Ok(results)
 }
 
 fn main() {

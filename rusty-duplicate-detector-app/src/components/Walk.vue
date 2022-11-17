@@ -3,11 +3,13 @@ import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 
 const path = ref("");
-const walkResponse = ref("");
+const walkResponse = ref();
 
 async function walk() {
   // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-  walkResponse.value = await invoke("walk", { path: path.value });
+  invoke("walk", { path: path.value })
+    .then((result) => walkResponse.value = result)
+    .catch((error) => console.error(error));
 }
 </script>
 
